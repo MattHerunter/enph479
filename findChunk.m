@@ -1,7 +1,7 @@
 function betterSong = findChunk(chunk,song,Fs)
     PLOTTING = false;
-    Fc = 5;
-    numFreqs = 50;
+    Fc = 10;
+    numFreqs = 30;
     song = song(1:end-mod(numel(song),Fs/Fc));
     Nc = numel(song)*Fc/Fs;
     Lc = Fs/Fc;
@@ -46,9 +46,10 @@ function betterSong = findChunk(chunk,song,Fs)
         betterSong = [betterSong y];
     end
     
-    %betterSong = betterSong.*(sin(pi*Fc*(1:numel(betterSong))/Fs)).^2;
-    %betterSong = [betterSong 0*(1:Lc/2)]+[0*(1:Lc/2) betterSong];
+    betterSong = betterSong.*(sin(pi*Fc*(1:numel(betterSong))/Fs)).^2;
+    betterSong = [betterSong 0*(1:Lc/2)]+[0*(1:Lc/2) betterSong];
     
-    %soundsc((betterSong),Fs);
+    soundsc((betterSong),Fs);
+    plot(scum(28,:))
 end
 
