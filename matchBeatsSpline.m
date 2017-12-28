@@ -1,4 +1,4 @@
-function beat3 = matchBeats(beat1,beat2)
+function beat3 = matchBeatsSpline(beat1,beat2)
     t = linspace(0,beat1(end),1000);
     
     bestq = -inf;
@@ -43,17 +43,8 @@ function beat3 = matchBeats(beat1,beat2)
     pair1 = bestpair1;
     pair2 = bestpair2;
     
-    pair1;
-    pair2;
-    
-    s = spline(beat2(pair2),beat1(pair1),t);
-    q = matchQuality(s,pair1,pair2);
-    
-    pair1 = [1 3 4 6 7 8 9 10 12];
-    pair2 = [1 3 4 5 6 7 8 9 11];          
-            
-    s = spline(beat2(pair2),beat1(pair1),t);
-    q = matchQuality(s,pair1,pair2);
+    pair1
+    pair2
     
     figure
     hold on

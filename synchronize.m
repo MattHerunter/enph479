@@ -17,6 +17,8 @@ function [out1,out2] = synchronize(Fs,time1,time2,song1,song2,beat1,beat2)
     out2 = [out2;song2(time2>beat2(end))];
     out1 = song1(time1 > beat1(1));
     [out1,out2]=pad(out1,out2);
+    
+    %[out1,out2]=pad(song1,song2);
 end
 
 function [ap,bp] = pad(a,b)
