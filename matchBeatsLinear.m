@@ -109,39 +109,46 @@ function beat3 = matchBeatsLinear(beat1,beat2)
         % Heuristic algorithm that goes from the beginning to the end of
         % the track and creates a pairing for each note if the pairing
         % exceeds a quality threshold.
-        for numpairs = minpairs:maxpairs
-            threshold = -0.5/numpairs;
+        
+        for numpairs = minpairs:maxpairs % Numpairs is a garbage variable here, just used for the graphing...
+            threshold = -0.5/numpairs; %How to define a reasonable quality threshold?
             
             tempbeat1 = beat1;
             tempbeat2 = beat2;
             
+            %First notes in each track always paired, currently.
             pair1 = [1];
             pair2 = [1];
             
             previi = 1;
-            
+            % Iterate over beats in 'beat1'.
             for ii = 2:(numel(beat1)-1)
                 qual = -inf;
                 bestjj = 0;
                 prevjj = pair2(end);
-                
+                % Iterate over potential pairing candidates from 'beat2'
                 for jj = (pair2(end)+1):(numel(beat2)-1)
                     
                     temp = (tempbeat2(jj)-tempbeat2(pair2(end)))/(tempbeat1(ii)-tempbeat1(pair1(end)));
                     dur = (tempbeat1(ii)-tempbeat1(pair1(end)));
                     tempqual = -(temp-1)^2 * dur;
                     
+                    % Keep track of best pairing candidate.
                     if tempqual > qual
                        qual = tempqual;
                        bestjj = jj;
                     end
                 end
             
+                % Only add the pairing if quality exceeds threshold.
+                % Otherwise, the beat from 'beat1' is left unpaired.
                 if qual > threshold
                     jj = bestjj;
                     pair1 = [pair1 ii];
                     pair2 = [pair2 jj];
                     
+                    % Adjust 'beat2' timings to synchronize the paired
+                    % notes.
                     stretchL = (tempbeat1(ii)-tempbeat1(previi))/(tempbeat2(jj)-tempbeat2(prevjj));
                     stretchR = (tempbeat1(end)-tempbeat1(ii))/(tempbeat2(end)-tempbeat2(jj));
                     
@@ -153,12 +160,15 @@ function beat3 = matchBeatsLinear(beat1,beat2)
                 end
             end
             
+            % Last notes in each track always paired, currently.
             pair1 = [pair1 numel(beat1)];
             pair2 = [pair2 numel(beat2)];
             
             q = matchQuality(beat1,beat2,pair1,pair2);
             bestqn(numpairs) = q;
             
+            % If we tried multiple quality thresholds, keep track of the best
+            % pairing
             if q > bestq
                 bestq = q;
                 bestpair1 = pair1;
