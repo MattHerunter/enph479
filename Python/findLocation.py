@@ -10,7 +10,6 @@ def findLocation(chunk, chunks):
     # chunk = b
     # Array to hold mean differences
 
-
     c = np.zeros([chunks.shape[0] - chunk.shape[0], chunks.shape[1]])
 
     # Subtract the chunk from the preprocessed list to get the differences

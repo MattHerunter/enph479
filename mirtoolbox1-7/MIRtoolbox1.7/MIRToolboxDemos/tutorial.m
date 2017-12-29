@@ -1,22 +1,23 @@
-help mirtoolbox
-help miraudio
+% help mirtoolbox
+% help miraudio
+% 
+% 
+% a = miraudio('ragtime.wav','Center','Sampling',11025,'Normal')
+% mirplay(a)
+% a = miraudio('ragtime.wav','Extract',0,1)
+% mirplay(a)
+% miraudio('ragtime.wav','Trim')
+% a1 = miraudio('pianoA4.wav');
+% a2 = miraudio('pianoF4.wav');
+% a3 = a1+a2;
+% mirplay(a3)
+% mirsave(a3)
+% 
+% f = mirframe('ragtime.wav',1,.5)
+%mirplay(f)
 
-
-a = miraudio('ragtime.wav','Center','Sampling',11025,'Normal')
-mirplay(a)
-a = miraudio('ragtime.wav','Extract',0,1)
-mirplay(a)
-miraudio('ragtime.wav','Trim')
-a1 = miraudio('pianoA4.wav');
-a2 = miraudio('pianoF4.wav');
-a3 = a1+a2;
-mirplay(a3)
-mirsave(a3)
-
-f = mirframe('ragtime.wav',1,.5)
-mirplay(f)
-
-mirenvelope('ragtime.wav')
+%mirenvelope('ragtime.wav')
+mirmidi('ragtime.wav')
 mirenvelope('ragtime.wav','Tau',.05)
 mirenvelope('ragtime.wav','Diff')
 mirenvelope('ragtime.wav','HalfwaveDiff')

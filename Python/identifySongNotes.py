@@ -1,25 +1,44 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy import signal
 from time import time
 
-def identifySongNotes(songChunk, Fs, filter_b, filter_a, note_detected, note_time):
+
+def identifySongNotes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_time, test_dict):
 
     # Algorithm Settings
     MIN_NOTE_LEN = 0.12
-    MIN_NOTE_IDX = MIN_NOTE_LEN * Fs
     DIFF_TOL = 4.8
+    PLOTTING = True
+
+    abs_song_chunk = np.abs(song_chunk)
 
     # Filter out higher frequencies
-    #FILTER_CUTOFF = 30.0
-    #FILTER_ORD = 4
-    #filter_b, filter_a = signal.bessel(FILTER_ORD, [FILTER_CUTOFF / (Fs / 2.0)], btype='low', analog=False) # Do this outside loop
-    songChunkFilt = signal.filtfilt(filter_b, filter_a, np.abs(songChunk)) # type: np.ndarray
+    abs_song_chunk_filt, zi = signal.lfilter(filter_b, filter_a, abs_song_chunk, zi=zi)
 
-    note_freq = 0
-    #while True:
+    if PLOTTING:
+        plt.clf()
+        plt.subplot(311)
+        plot_time = np.arange(float(song_chunk.size))/Fs
+        plt.plot(plot_time, abs_song_chunk, '-b', plot_time, abs_song_chunk_filt, '-r')
+        plt.show()
+
+        plt.subplot(312)
+        plot_time = np.arange(float(song_chunk.size - 1))/Fs
+        plt.plot(plot_time, np.diff(abs_song_chunk_filt), '-b', plot_time, np.ones(plot_time.shape)*DIFF_TOL, '-r')
+        plt.show()
+
+        plt.subplot(313)
+        song = np.abs(test_dict['song'])
+        plot_time = np.arange(float(song.size)) / Fs
+        plt.plot(plot_time, song, '-b')
+        plot_time = np.arange(float(song_chunk.size)) / Fs + test_dict['time']
+        plt.plot(plot_time, abs_song_chunk, '-r')
+
+    note_freq = -1
     # If no note has been detected, search for one
     if not note_detected:
-        note_idx = np.nonzero(np.diff(songChunkFilt) >= DIFF_TOL)[0] # type: np.ndarray
+        note_idx = np.nonzero(np.diff(abs_song_chunk_filt) >= DIFF_TOL)[0]  # type: np.ndarray
         if note_idx.size >= 1:
             note_detected = True
 
@@ -28,17 +47,22 @@ def identifySongNotes(songChunk, Fs, filter_b, filter_a, note_detected, note_tim
             note_time = time()
 
             # Get dominant frequency of note
-            fftSongChunk = np.fft.fft(songChunkFilt)
-            absFftSongChunk = np.abs(fftSongChunk)
-            freqSongChunk = np.fft.fftfreq(fftSongChunk.size, 1.0/Fs)
-
-            note_freq = freqSongChunk[np.argmax(absFftSongChunk - np.mean(absFftSongChunk))]
-
+            fft_song_chunk = np.fft.fft(song_chunk)
+            mag_fft_song_chunk = np.abs(fft_song_chunk)
+            freq_song_chunk = np.fft.fftfreq(fft_song_chunk.size, 1.0/Fs)
+            note_freq_idx = np.argmax(mag_fft_song_chunk - np.mean(mag_fft_song_chunk))
+            note_freq = freq_song_chunk[note_freq_idx]
+            
+            if PLOTTING:
+                plt.clf()
+                plt.plot(freq_song_chunk, mag_fft_song_chunk, '-b', freq_song_chunk[note_freq_idx], mag_fft_song_chunk[note_freq_idx], '*r')
+                plt.show()
+            
     # Reset the flag after enough time has passed
     elif time() - note_time >= MIN_NOTE_LEN:
         note_detected = False
 
-    return {'note_detected': note_detected, 'note_time': note_time, 'note_freq': note_freq}
+    return {'note_detected': note_detected, 'note_time': note_time, 'note_freq': note_freq, 'zi': zi}
 
 
 # UNUSED FOR NOW

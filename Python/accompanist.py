@@ -7,22 +7,26 @@ from input_audio_thread import input_audio_thread
 from processing_thread import processing_thread
 from playback_thread import playback_thread
 
+
 # Main accompanist driving code.
 def accompanist():
     input_audio = Queue.Queue()
-    rate, data = wavfile.read('../SongLibrary/Test2.wav')
-    player_track = data[:,0]
     # rate, data = wavfile.read('../SongLibrary/Test2.wav')
-    accompaniment_track = data[:,0]
+    rate, data = wavfile.read('../SongLibrary/majorScaleSingle.wav')
+    player_track = data[:, 0]
+    accompaniment_track = data[:, 0]
     update_queue = Queue.Queue()
 
+    # Testing information for processing_thread
+    test_dict = {'song': player_track, 'Fs': rate}
+
     input_thread = FuncThread(input_audio_thread, input_audio)
-    process_thread = FuncThread(processing_thread, input_audio, player_track, accompaniment_track, update_queue)
+    process_thread = FuncThread(processing_thread, input_audio, player_track, accompaniment_track, update_queue, test_dict)
     play_thread = FuncThread(playback_thread, accompaniment_track, update_queue)
 
     input_thread.start()
     process_thread.start()
-    play_thread.start()
+    #play_thread.start()
 
 
 # Implements threads that can take parameters
