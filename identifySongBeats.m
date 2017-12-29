@@ -1,4 +1,4 @@
-function beats = identifySongBeats(Fs,time,song)
+function [beats, mag] = identifySongBeats(Fs,time,song)
     % Plot Settings
     alw = 0.75;    % AxesLineWidth
     fsz = 22;      % Fontsize
@@ -8,7 +8,7 @@ function beats = identifySongBeats(Fs,time,song)
     % Algorithm Settings
     MIN_NOTE_LEN = 0.12;
     CUTOFF_FREQ = 30;
-    DIFF_TOL = 1e-4;
+    DIFF_TOL = 5e-5;
     MAG_TOL = 600;
     MIN_FREQ_SPACING = 50;
     
@@ -23,7 +23,7 @@ function beats = identifySongBeats(Fs,time,song)
     %pause
     
     % Get rising edges of signal
-    idx = risingEdges(songFftFilt,DIFF_TOL,minNoteIdx);
+    [idx, mag] = risingEdges(songFftFilt,DIFF_TOL,minNoteIdx);
     
     % Plot of rising edge locations
     fftPlot = figure;
@@ -34,6 +34,8 @@ function beats = identifySongBeats(Fs,time,song)
     xlabel('Time (s)');
     ylabel('Amplitude');
     title(['Cut-off Frequency = ' num2str(CUTOFF_FREQ) ' Hz']);
+    
+    beats = time(idx);
 end
 
 % Find peaks of x above tol atleast spacing apart (need something better
@@ -62,13 +64,22 @@ function idx = peakIdxs(x,tol,spacing)
     idx(dupIdx)=[];
 end
 
-function idx = risingEdges(x,tol,spacing)
+function [idx, mag] = risingEdges(x,tol,spacing)
     % Diff and diff shifted forward one
     dx = diff(x);
     dxp = [0;dx(1:end-1)];
     
     % Idx of rising edges
     idx = find(dx >= tol & dxp < tol);
+    mag = zeros(size(idx));
+    for ii = 1:numel(idx)
+        id = idx(ii);
+        bad = 0;
+        while x(id+1) > x(id)
+            id = id+1;
+        end
+        mag(ii) = x(id);
+    end
     
     % Removes duplicates
     dupIdx = find(diff(idx) < spacing)+1;

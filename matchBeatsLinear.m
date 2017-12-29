@@ -1,4 +1,4 @@
-function beat3 = matchBeatsLinear(beat1,beat2)
+function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2)
     beat2_unscaled = beat2;
     beat2 = beat2.*(beat1(end)-beat1(1))/(beat2(end)-beat2(1));
     t = linspace(0,beat1(end),1000);
@@ -35,7 +35,7 @@ function beat3 = matchBeatsLinear(beat1,beat2)
                 end
                 pair1 = [1 find(bin1)+1 numel(beat1)];
 
-                q = matchQuality(beat1,beat2,pair1,pair2);
+                q = matchQuality(beat1,beat2,pair1,pair2,mag1,mag2);
                 if q > bestq
                     bestq = q;
                     bestpair1 = pair1;
@@ -95,7 +95,7 @@ function beat3 = matchBeatsLinear(beat1,beat2)
             %pair1
             %pair2
 
-            q = matchQuality(beat1,beat2,pair1,pair2);
+            q = matchQuality(beat1,beat2,pair1,pair2,mag1,mag2);
             bestqn(numpairs) = q;
 
             if q > bestq
@@ -111,7 +111,7 @@ function beat3 = matchBeatsLinear(beat1,beat2)
         % exceeds a quality threshold.
         
         for numpairs = minpairs:maxpairs % Numpairs is a garbage variable here, just used for the graphing...
-            threshold = -0.5/numpairs; %How to define a reasonable quality threshold?
+            threshold = -30*0.7^(2*numpairs); %How to define a reasonable quality threshold?
             
             tempbeat1 = beat1;
             tempbeat2 = beat2;
@@ -131,7 +131,7 @@ function beat3 = matchBeatsLinear(beat1,beat2)
                     
                     temp = (tempbeat2(jj)-tempbeat2(pair2(end)))/(tempbeat1(ii)-tempbeat1(pair1(end)));
                     dur = (tempbeat1(ii)-tempbeat1(pair1(end)));
-                    tempqual = -(temp-1)^2 * dur;
+                    tempqual = -log(temp)^2 * mag1(ii) * mag2(jj);
                     
                     % Keep track of best pairing candidate.
                     if tempqual > qual
@@ -139,11 +139,30 @@ function beat3 = matchBeatsLinear(beat1,beat2)
                        bestjj = jj;
                     end
                 end
-            
+                
                 % Only add the pairing if quality exceeds threshold.
                 % Otherwise, the beat from 'beat1' is left unpaired.
                 if qual > threshold
                     jj = bestjj;
+                    
+                    % Make sure the pairing candidate jj doesn't have a
+                    % better pairing candidate from 'beat1' than ii. If it
+                    % does, abort.
+                    bad = 0;
+                    for kk = (ii+1):(numel(beat1)-1)
+                        temp = (tempbeat2(jj)-tempbeat2(pair2(end)))/(tempbeat1(kk)-tempbeat1(pair1(end)));
+                        dur = (tempbeat1(kk)-tempbeat1(pair1(end)));
+                        tempqual = -log(temp)^2 * mag1(kk) * mag2(jj);
+
+                        % Keep track of best pairing candidate.
+                        if tempqual > qual
+                           bad = 1;
+                        end
+                    end
+                    if bad
+                        continue;
+                    end
+                    
                     pair1 = [pair1 ii];
                     pair2 = [pair2 jj];
                     
@@ -164,7 +183,7 @@ function beat3 = matchBeatsLinear(beat1,beat2)
             pair1 = [pair1 numel(beat1)];
             pair2 = [pair2 numel(beat2)];
             
-            q = matchQuality(beat1,beat2,pair1,pair2);
+            q = matchQuality(beat1,beat2,pair1,pair2,mag1,mag2);
             bestqn(numpairs) = q;
             
             % If we tried multiple quality thresholds, keep track of the best
@@ -180,9 +199,9 @@ function beat3 = matchBeatsLinear(beat1,beat2)
     pair1 = bestpair1;
     pair2 = bestpair2;
     
-    pair1
-    pair2
-    matchQuality(beat1,beat2,pair1,pair2)
+    %pair1
+    %pair2
+    %matchQuality(beat1,beat2,pair1,pair2)
     
     %figure
     %hold on
@@ -218,9 +237,11 @@ function beat3 = matchBeatsLinear(beat1,beat2)
     figure
     hold on
     plot(3:maxpairs,bestqn(3:maxpairs),'-*')
+    xlabel('Number of pairs')
+    ylabel('Quality of pairing')
 end
 
-function q = matchQuality(beat1,beat2,pair1,pair2)
+function q = matchQuality(beat1,beat2,pair1,pair2,mag1,mag2)
     tempo = [];
     duration = [];
     for qq = 1:numel(pair2)-1
@@ -228,9 +249,10 @@ function q = matchQuality(beat1,beat2,pair1,pair2)
         tempo = [tempo temp];
         dur = beat1(pair1(qq+1))-beat1(pair1(qq));
         duration = [duration dur];
+        mag = mag1(pair1(2:end)).*mag2(pair2(2:end));
     end
     
-    q = (numel(pair1)-2)/(dot((tempo-1).^2,duration)+1);
+    q = (numel(pair1)-2)/(dot(log(tempo).^2,mag)+1);
 end
 
 function plotBeat(beat, y, edgecolor, facecolor)
