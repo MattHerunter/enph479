@@ -6,7 +6,7 @@ function notes = identifySongNotes()
     msz = 12;       % MarkerSize
     
     % Algorithm Settings
-    PLOTTING = 0;
+    PLOTTING = 1;
     MIN_NOTE_LEN = 0.12;
     CUTOFF_FREQ = 30;
     DIFF_TOL = 4.8;

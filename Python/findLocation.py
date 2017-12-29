@@ -25,7 +25,7 @@ def findLocation(chunk, chunks):
 
     # Find the minimum value
     location = np.argmin(match)
-    print(location)
+    #print(location)
 
     return location
 

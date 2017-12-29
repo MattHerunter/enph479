@@ -9,7 +9,7 @@ def identifySongNotes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, not
     # Algorithm Settings
     MIN_NOTE_LEN = 0.12
     DIFF_TOL = 4.8
-    PLOTTING = True
+    PLOTTING = False
 
     abs_song_chunk = np.abs(song_chunk)
 
@@ -47,12 +47,21 @@ def identifySongNotes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, not
             note_time = time()
 
             # Get dominant frequency of note
-            fft_song_chunk = np.fft.fft(song_chunk)
+            fft_song_chunk = np.fft.fft(song_chunk - np.mean(song_chunk))
             mag_fft_song_chunk = np.abs(fft_song_chunk)
+
+            # Frequency vector
             freq_song_chunk = np.fft.fftfreq(fft_song_chunk.size, 1.0/Fs)
-            note_freq_idx = np.argmax(mag_fft_song_chunk - np.mean(mag_fft_song_chunk))
+
+            # Cut in half
+            freq_song_chunk = freq_song_chunk[0:freq_song_chunk.size/2]
+            mag_fft_song_chunk = mag_fft_song_chunk[0:mag_fft_song_chunk.size/2]
+
+            # Get max
+            note_freq_idx = np.argmax(mag_fft_song_chunk)
             note_freq = freq_song_chunk[note_freq_idx]
-            
+
+            print('time: ' + str(test_dict['time']) + ', freq: ' + str(note_freq))
             if PLOTTING:
                 plt.clf()
                 plt.plot(freq_song_chunk, mag_fft_song_chunk, '-b', freq_song_chunk[note_freq_idx], mag_fft_song_chunk[note_freq_idx], '*r')
