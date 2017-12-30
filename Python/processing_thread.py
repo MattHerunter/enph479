@@ -2,6 +2,7 @@ import numpy as np
 import identifySongNotes as idNotes
 import findLocation as findLoc
 from scipy import signal
+from ringbuffer import RingBuffer
 
 
 def processing_thread(input_audio, player_track, accompaniment_track, update_queue, test_dict):
@@ -13,12 +14,14 @@ def processing_thread(input_audio, player_track, accompaniment_track, update_que
     note_detected = False
     note_time = 0
     note_freq = -1
-    
+    time = 0
+    detected_notes = RingBuffer(10)
+
     # Heinous hack
     Fs = 44100
 
     # Low pass filter parameters
-    filter_cutoff = 30.0 # 30.0
+    filter_cutoff = 30.0
     filter_order = 4
 
     # Design the filter
@@ -36,7 +39,6 @@ def processing_thread(input_audio, player_track, accompaniment_track, update_que
     rel_freqs = chunks[1:, 1]/chunks[0:-1, 1]
     rel_chunks = np.c_[rel_times, rel_freqs]
 
-    time = 0
     while True:
         # Get next chunk of data from the input_audio queue
         song_chunk = input_audio.get()
@@ -59,8 +61,9 @@ def processing_thread(input_audio, player_track, accompaniment_track, update_que
 
             # Need at least two note detections since we are working with relative frequencies/timings
             if note_freq_prev is not -1:
-                rel_chunk = np.array([note_time - note_time_prev, note_freq/note_freq_prev])
-
+                rel_chunk = np.array([[note_time - note_time_prev, note_freq/note_freq_prev]])
+                detected_notes.extend(rel_chunk)
+                print(detected_notes.get())
                 # Find chunk location
                 chunk_location = findLoc.findLocation(rel_chunk, rel_chunks)
 
