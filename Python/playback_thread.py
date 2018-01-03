@@ -18,7 +18,6 @@ def playback_thread(accompaniment_track, update_queue):
     pvoc = pv.PhaseVocoder()
 
     while True:
-        print("ass")
         update = update_queue.get()
 
         position = update.position

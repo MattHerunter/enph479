@@ -61,15 +61,15 @@ def processing_thread(input_audio, player_track, accompaniment_track, update_que
 
             # Need at least two note detections since we are working with relative frequencies/timings
             if note_freq_prev is not -1:
-                rel_chunk = np.array([[note_time - note_time_prev, note_freq/note_freq_prev]])
-                detected_notes.extend(rel_chunk)
+                rel_note = np.array([[note_time - note_time_prev, note_freq/note_freq_prev]])
+                detected_notes.extend(rel_note)
                 print(detected_notes.get())
                 # Find chunk location
-                chunk_location = findLoc.findLocation(rel_chunk, rel_chunks)
+                chunk_location = findLoc.findLocation(detected_notes, rel_chunks)
 
                 # Set position/tempo of the update
                 position = chunk_location
-                update = OutputUpdate(position, 0.5)
+                update = OutputUpdate(position, 1.0)
                 update_queue.put(update)
 
 

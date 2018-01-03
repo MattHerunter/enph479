@@ -27,6 +27,7 @@ function [out1,out2] = synchronizeNew(Fs,song1,song2)
     [out1,out2]=pad(out1,out2);
     
     soundsc(out1+out2,Fs);
+    audiowrite('MatchTests/synchronize_out.wav',out1+out2,Fs);
 end
 
 function [ap,bp] = pad(a,b)
