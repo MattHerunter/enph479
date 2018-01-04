@@ -1,6 +1,6 @@
 import numpy as np
 
-def findLocation(chunk, chunks):
+def find_location(chunk, chunks):
     # TESTING
     # Preprocessed relative time/frequency pairs
     # a = np.array([[1, 2, 3, 4, 5], [1, 3, 3, 4, 5]]).T

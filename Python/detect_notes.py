@@ -4,12 +4,12 @@ from scipy import signal
 from time import time
 
 
-def identifySongNotes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_time, test_dict):
+def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_time, test_dict):
 
     # Algorithm Settings
     MIN_NOTE_LEN = 0.12
     DIFF_TOL = 4.8
-    PLOTTING = False
+    PLOTTING = True
 
     abs_song_chunk = np.abs(song_chunk)
 
@@ -20,20 +20,32 @@ def identifySongNotes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, not
         plt.clf()
         plt.subplot(311)
         plot_time = np.arange(float(song_chunk.size))/Fs
-        plt.plot(plot_time, abs_song_chunk, '-b', plot_time, abs_song_chunk_filt, '-r')
-        plt.show()
+        plt.plot(plot_time, abs_song_chunk, '-b', label='Raw Signal')
+        plt.plot(plot_time, abs_song_chunk_filt, '-r', label='Filtered Signal')
+        plt.ylabel('Signal Amplitude')
+        plt.xlabel('Time (s)')
+        plt.legend()
 
         plt.subplot(312)
         plot_time = np.arange(float(song_chunk.size - 1))/Fs
-        plt.plot(plot_time, np.diff(abs_song_chunk_filt), '-b', plot_time, np.ones(plot_time.shape)*DIFF_TOL, '-r')
-        plt.show()
+        plt.plot(plot_time, np.diff(abs_song_chunk_filt), '-b', label='Derivative of Filtered Signal')
+        plt.plot(plot_time, np.ones(plot_time.shape)*DIFF_TOL, '-r', label='Detection Threshold')
+        plt.ylabel('Signal Amplitude')
+        plt.xlabel('Time (s)')
+        plt.legend()
 
         plt.subplot(313)
         song = np.abs(test_dict['song'])
         plot_time = np.arange(float(song.size)) / Fs
-        plt.plot(plot_time, song, '-b')
+        plt.plot(plot_time, song, '-b', label='Entire Song')
         plot_time = np.arange(float(song_chunk.size)) / Fs + test_dict['time']
-        plt.plot(plot_time, abs_song_chunk, '-r')
+        plt.plot(plot_time, abs_song_chunk, '-r', label='Current Window')
+        plt.ylabel('Signal Amplitude')
+        plt.xlabel('Time (s)')
+        plt.legend()
+
+        plt.tight_layout()
+        plt.show()
 
     note_freq = -1
     # If no note has been detected, search for one
@@ -57,12 +69,18 @@ def identifySongNotes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, not
             freq_song_chunk = freq_song_chunk[0:freq_song_chunk.size/2]
             mag_fft_song_chunk = mag_fft_song_chunk[0:mag_fft_song_chunk.size/2]
 
-            # Get max
+            # Get max and attempt to correct for harmonics
             note_freq_idx = np.argmax(mag_fft_song_chunk)
             note_freq = freq_song_chunk[note_freq_idx]
+            base_harmonic = False
+            harmonic_window_width = np.ceil(float(mag_fft_song_chunk.size)/20)
+            while not base_harmonic:
+                note_freq_harmonic_idx = np.argmax(mag_fft_song_chunk[:])
+                note_freq_idx = np.argmax(mag_fft_song_chunk)
+                note_freq = freq_song_chunk[note_freq_idx]
 
             print('time: ' + str(test_dict['time']) + ', freq: ' + str(note_freq))
-            if PLOTTING:
+            if PLOTTING and False:
                 plt.clf()
                 plt.plot(freq_song_chunk, mag_fft_song_chunk, '-b', freq_song_chunk[note_freq_idx], mag_fft_song_chunk[note_freq_idx], '*r')
                 plt.show()

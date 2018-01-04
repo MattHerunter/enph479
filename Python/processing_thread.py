@@ -1,6 +1,6 @@
 import numpy as np
-import identifySongNotes as idNotes
-import findLocation as findLoc
+from detect_notes import detect_notes
+from find_location import find_location
 from scipy import signal
 from ringbuffer import RingBuffer
 
@@ -46,7 +46,7 @@ def processing_thread(input_audio, player_track, accompaniment_track, update_que
         # Detect song notes
         test_dict['time'] = time
         time += float(song_chunk.size) / Fs
-        id_notes_dict = idNotes.identifySongNotes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_time, test_dict)
+        id_notes_dict = detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_time, test_dict)
 
         # Update some of the values from the function
         note_detected = id_notes_dict['note_detected']
@@ -65,7 +65,7 @@ def processing_thread(input_audio, player_track, accompaniment_track, update_que
                 detected_notes.extend(rel_note)
                 print(detected_notes.get())
                 # Find chunk location
-                chunk_location = findLoc.findLocation(detected_notes, rel_chunks)
+                chunk_location = find_location(detected_notes, rel_chunks)
 
                 # Set position/tempo of the update
                 position = chunk_location
