@@ -1,23 +1,17 @@
-function notes = identifySongNotes()
+function notes = identifySongNotes(song, Fs, plotting)
     % Plot Settings
-    alw = 0.75;    % AxesLineWidth
+    alw = 0.75;    % AxesLineWidthw
     fsz = 22;      % Fontsize
     lw = 1.5;      % LineWidth
     msz = 12;       % MarkerSize
     
     % Algorithm Settings
-    PLOTTING = 1;
     MIN_NOTE_LEN = 0.12;
     CUTOFF_FREQ = 30;
     DIFF_TOL = 4.8;
     MAG_TOL = 592;
     MIN_FREQ_SPACING = 50;
-    SONG_FILE = 'majorScaleSingle.wav';
-    %SONG_FILE = 'matchTest0_R.m4a';
     
-    % Load song, discard stereo if present
-    [song,Fs] = audioread(SONG_FILE);
-    song = song(:,1);
     t = (1:numel(song))/Fs;
     S2IDX = numel(t)/t(end);
     minNoteIdx = round(MIN_NOTE_LEN*S2IDX);
@@ -29,7 +23,7 @@ function notes = identifySongNotes()
     idx = risingEdges(songFftFilt,Fs,DIFF_TOL,minNoteIdx);
     
     % Plot of rising edge locations
-    if PLOTTING
+    if plotting
         fftPlot = figure;
         figure(fftPlot);
         plot(t,songFftFilt,'-k',t(idx),songFftFilt(idx),'xr','linewidth',lw,'MarkerSize',msz);
@@ -39,7 +33,7 @@ function notes = identifySongNotes()
         title('Note Detection on Major Scale');
         set(gca, 'FontSize', fsz, 'LineWidth', alw); %<- Set properties
         A = axis;
-        axis([0 5 A(3) A(4)]) 
+        axis([0 5 A(3) A(4)])
         pbaspect([1 1 1]);
         pause;
     end
@@ -48,7 +42,10 @@ function notes = identifySongNotes()
     
     % Find the frequencies of each peak
     for ii = 1:numel(idx)
-        [freq, mag] = fftMag(song((idx(ii)-minNoteIdx):(idx(ii)+minNoteIdx)),Fs);
+        % Ensure no out of bounds errors
+        windowStart = max(idx(ii) - minNoteIdx,1);
+        windowEnd   = min(idx(ii) + minNoteIdx, numel(song));
+        [freq, mag] = fftMag(song(windowStart:windowEnd),Fs);
         noteIdx = 1:ceil(numel(freq)/2);
         freq = freq(noteIdx);
         mag = mag(noteIdx);
@@ -57,7 +54,7 @@ function notes = identifySongNotes()
         notes(ii,2) = freq(pkIdxs(1));
         
         % Plot frequencies
-        if PLOTTING
+        if plotting
             plot(freq(pkIdxs),mag(pkIdxs),'*r',freq,mag,'-k');
             pause
         end
@@ -98,7 +95,6 @@ function idx = risingEdges(x,Fs,tol,spacing)
     
     % Idx of rising edges
     idx = find(dx >= tol & dxp < tol);
-    %idx = find(dx >= tol);
     
     % Removes duplicates
     dupIdx = find(diff(idx) < spacing)+1;

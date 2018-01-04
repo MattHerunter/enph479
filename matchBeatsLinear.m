@@ -1,4 +1,5 @@
-function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2)
+function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2,plotting)
+    
     beat2_unscaled = beat2;
     beat2 = beat2.*(beat1(end)-beat1(1))/(beat2(end)-beat2(1));
     t = linspace(0,beat1(end),1000);
@@ -25,7 +26,7 @@ function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2)
                 continue;
             end
             pair2 = [1 find(bin2)+1 numel(beat2)];
-
+            
             for jj = 1:(2^(numel(beat1)-2)-1)
                 bin1 = dec2bin(jj);
                 bin1 = bin1 ~= '0';
@@ -34,7 +35,7 @@ function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2)
                     continue;
                 end
                 pair1 = [1 find(bin1)+1 numel(beat1)];
-
+                
                 q = matchQuality(beat1,beat2,pair1,pair2,mag1,mag2);
                 if q > bestq
                     bestq = q;
@@ -42,7 +43,7 @@ function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2)
                     bestpair2 = pair2;
                 end
                 if q > bestqn(sum(bin1))
-                   bestqn(sum(bin1)) = q; 
+                    bestqn(sum(bin1)) = q;
                 end
             end
         end
@@ -54,7 +55,7 @@ function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2)
         for numpairs = minpairs:maxpairs
             pair1 = [1 2:(numpairs+1) numel(beat1)];
             pair2 = [1 2:(numpairs+1) numel(beat2)];
-
+            
             while 1
                 changed = 0;
                 for ii = (numel(pair1)-1):-1:2
@@ -67,7 +68,7 @@ function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2)
                             tempR = (beat2(pair2(ii+1))-beat2(p2))/(beat1(pair1(ii+1))-beat1(p1));
                             durL = beat1(p1)-beat1(pair1(ii-1));
                             durR = beat1(pair1(ii+1))-beat1(p1);
-
+                            
                             qual = -((tempL-1).^2 * durL + (tempR-1).^2 * durR);
                             qual
                             if qual > bestqual
@@ -77,7 +78,7 @@ function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2)
                             end
                         end
                     end
-
+                    
                     if (bestp1 == pair1(ii)) && (bestp2 == pair2(ii))
                         %changed = 0;
                     else
@@ -86,20 +87,20 @@ function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2)
                         pair2(ii) = bestp2;
                     end
                 end
-
+                
                 if changed == 0
                     break;
                 end
             end
-
+            
             %pair1
             %pair2
-
+            
             q = matchQuality(beat1,beat2,pair1,pair2,mag1,mag2);
             bestqn(numpairs) = q;
-
+            
             if q > bestq
-            %if numpairs == 5
+                %if numpairs == 5
                 bestq = q;
                 bestpair1 = pair1;
                 bestpair2 = pair2;
@@ -135,8 +136,8 @@ function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2)
                     
                     % Keep track of best pairing candidate.
                     if tempqual > qual
-                       qual = tempqual;
-                       bestjj = jj;
+                        qual = tempqual;
+                        bestjj = jj;
                     end
                 end
                 
@@ -153,10 +154,10 @@ function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2)
                         temp = (tempbeat2(jj)-tempbeat2(pair2(end)))/(tempbeat1(kk)-tempbeat1(pair1(end)));
                         dur = (tempbeat1(kk)-tempbeat1(pair1(end)));
                         tempqual = -log(temp)^2 * mag1(kk) * mag2(jj);
-
+                        
                         % Keep track of best pairing candidate.
                         if tempqual > qual
-                           bad = 1;
+                            bad = 1;
                         end
                     end
                     if bad
@@ -203,42 +204,44 @@ function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2)
     %pair2
     %matchQuality(beat1,beat2,pair1,pair2)
     
-    %figure
-    %hold on
-    %plot(t,s)
-    %plot(t(1:end-1),diff(s)./diff(t))
-    %plot(t(1:end-2),diff(s,2)./diff(t(1:end-1)).^2)
-
-    beat3 = spline(beat2(pair2),beat1(pair1),beat2);
-    figure
-    hold on
-    EC1 = [0 0 1];
-    FC1 = [0.4 0.6 0.8];
-    EC2 = [1 0 0];
-    FC2 = [0.8 0.6 0.4];
-    plotBeat(beat1,0.3,EC1,FC1)
-    %plotBeat(beat2.*(beat1(end)/beat2(end)),2.0)
-    plotBeat(beat2_unscaled,2.2,EC2,FC2)
-    plotBeat(beat1,1.9,EC1,FC1)
-    x = [beat1(pair1);beat2_unscaled(pair2)];
-    y = [1.9;2.2];
-    plot(x,y,'--k')
-    plotBeat(beat3,0.6,EC2,FC2)
-    x = [beat1(pair1);beat3(pair2)];
-    y = [0.3;0.6];
-    plot(x,y,'k')
-    ylim([0 3])
-    %xlim([-0.2 3.1])
-    
-    set(gca,'xtick',[])
-    set(gca,'ytick',[])
-    set(gca,'visible','off')
-    
-    figure
-    hold on
-    plot(3:maxpairs,bestqn(3:maxpairs),'-*')
-    xlabel('Number of pairs')
-    ylabel('Quality of pairing')
+    if plotting
+        %figure
+        %hold on
+        %plot(t,s)
+        %plot(t(1:end-1),diff(s)./diff(t))
+        %plot(t(1:end-2),diff(s,2)./diff(t(1:end-1)).^2)
+        
+        beat3 = spline(beat2(pair2),beat1(pair1),beat2);
+        figure
+        hold on
+        EC1 = [0 0 1];
+        FC1 = [0.4 0.6 0.8];
+        EC2 = [1 0 0];
+        FC2 = [0.8 0.6 0.4];
+        plotBeat(beat1,0.3,EC1,FC1)
+        %plotBeat(beat2.*(beat1(end)/beat2(end)),2.0)
+        plotBeat(beat2_unscaled,2.2,EC2,FC2)
+        plotBeat(beat1,1.9,EC1,FC1)
+        x = [beat1(pair1);beat2_unscaled(pair2)];
+        y = [1.9;2.2];
+        plot(x,y,'--k')
+        plotBeat(beat3,0.6,EC2,FC2)
+        x = [beat1(pair1);beat3(pair2)];
+        y = [0.3;0.6];
+        plot(x,y,'k')
+        ylim([0 3])
+        %xlim([-0.2 3.1])
+        
+        set(gca,'xtick',[])
+        set(gca,'ytick',[])
+        set(gca,'visible','off')
+        
+        figure
+        hold on
+        plot(3:maxpairs,bestqn(3:maxpairs),'-*')
+        xlabel('Number of pairs')
+        ylabel('Quality of pairing')
+    end
 end
 
 function q = matchQuality(beat1,beat2,pair1,pair2,mag1,mag2)
