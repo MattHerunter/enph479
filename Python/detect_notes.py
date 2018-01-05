@@ -6,17 +6,18 @@ from time import time
 
 def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_time, test_dict):
 
-    # Algorithm Settings
+    # Algorithm Settings (these should be the same or similar to the values found in identifySongNotes.m)
     MIN_NOTE_LEN = 0.12
     DIFF_TOL = 4.8
-    PLOTTING = True
 
+    # Absolute value of song
     abs_song_chunk = np.abs(song_chunk)
 
     # Filter out higher frequencies
     abs_song_chunk_filt, zi = signal.lfilter(filter_b, filter_a, abs_song_chunk, zi=zi)
 
-    if PLOTTING:
+    # Plotting for debugging/development only
+    if test_dict['plotting']:
         plt.clf()
         plt.subplot(311)
         plot_time = np.arange(float(song_chunk.size))/Fs
@@ -28,7 +29,7 @@ def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_tim
 
         plt.subplot(312)
         plot_time = np.arange(float(song_chunk.size - 1))/Fs
-        plt.plot(plot_time, np.diff(abs_song_chunk_filt), '-b', label='Derivative of Filtered Signal')
+        plt.plot(plot_time, np.diff(abs_song_chunk_filt)*Fs, '-b', label='Derivative of Filtered Signal')
         plt.plot(plot_time, np.ones(plot_time.shape)*DIFF_TOL, '-r', label='Detection Threshold')
         plt.ylabel('Signal Amplitude')
         plt.xlabel('Time (s)')
@@ -47,10 +48,15 @@ def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_tim
         plt.tight_layout()
         plt.show()
 
+    # If no note has been detected,
+    # search for one
     note_freq = -1
-    # If no note has been detected, search for one
     if not note_detected:
-        note_idx = np.nonzero(np.diff(abs_song_chunk_filt) >= DIFF_TOL)[0]  # type: np.ndarray
+
+        # See if any values in the difference are above the specified tolerance
+        note_idx = np.nonzero(np.diff(abs_song_chunk_filt)*Fs >= DIFF_TOL)[0]
+
+        # If yes, extract the frequency
         if note_idx.size >= 1:
             note_detected = True
 
@@ -59,7 +65,8 @@ def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_tim
             note_time = time()
 
             # Get dominant frequency of note
-            fft_song_chunk = np.fft.fft(song_chunk - np.mean(song_chunk))
+            song_chunk_trim = song_chunk[note_idx:]
+            fft_song_chunk = np.fft.fft(song_chunk_trim - np.mean(song_chunk_trim))
             mag_fft_song_chunk = np.abs(fft_song_chunk)
 
             # Frequency vector
@@ -69,18 +76,25 @@ def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_tim
             freq_song_chunk = freq_song_chunk[0:freq_song_chunk.size/2]
             mag_fft_song_chunk = mag_fft_song_chunk[0:mag_fft_song_chunk.size/2]
 
-            # Get max and attempt to correct for harmonics
+            # Get maximum frequency in the FFT
             note_freq_idx = np.argmax(mag_fft_song_chunk)
             note_freq = freq_song_chunk[note_freq_idx]
+
+            # Attempt to correct for harmonics (sometimes the first harmonic has a higher peak than the base harmonic)
             base_harmonic = False
-            harmonic_window_width = np.ceil(float(mag_fft_song_chunk.size)/20)
+            harmonic_window_width = int(np.ceil(5/np.diff(freq_song_chunk)[0]))  # 5Hz
             while not base_harmonic:
-                note_freq_harmonic_idx = np.argmax(mag_fft_song_chunk[:])
-                note_freq_idx = np.argmax(mag_fft_song_chunk)
-                note_freq = freq_song_chunk[note_freq_idx]
+                harmonic_window_start = int(max(note_freq_idx/2 - harmonic_window_width, 0))
+                harmonic_window_end = int(min(harmonic_window_start + harmonic_window_width, mag_fft_song_chunk.size))
+                harmonic_freq_idx = np.argmax(mag_fft_song_chunk[harmonic_window_start:harmonic_window_end]) + harmonic_window_start
+
+                if mag_fft_song_chunk[harmonic_freq_idx] >= 0.85*mag_fft_song_chunk[note_freq_idx]:
+                    note_freq_idx = harmonic_freq_idx
+                else:
+                    base_harmonic = True
 
             print('time: ' + str(test_dict['time']) + ', freq: ' + str(note_freq))
-            if PLOTTING and False:
+            if test_dict['plotting']:
                 plt.clf()
                 plt.plot(freq_song_chunk, mag_fft_song_chunk, '-b', freq_song_chunk[note_freq_idx], mag_fft_song_chunk[note_freq_idx], '*r')
                 plt.show()
@@ -117,7 +131,7 @@ def peakIdxs(x, tol, spacing):
     idx = np.delete(idx,dupIdx)
     return idx
 
-
+# UNUSED FOR NOW
 def detectRisingEdge(x, Fs, tol, spacing):
     # Diff and diff shifted forward one
     dx = np.diff(x)*Fs

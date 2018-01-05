@@ -8,19 +8,30 @@ from processing_thread import processing_thread
 from playback_thread import playback_thread
 
 
-# Main accompanist driving code.
+# Main accompanist driving code
 def accompanist():
     input_audio = Queue.Queue()
-    # rate, data = wavfile.read('../SongLibrary/Test2.wav')
     rate, data = wavfile.read('../SongLibrary/majorScaleSingle.wav')
-    player_track = data[:, 0]
-    accompaniment_track = data[:, 0]
+    # rate, data = wavfile.read('WriteDir/song1Synchronized.wav')
+
+    # Normalize magnitude of the audio file to 1. MATLAB's audioread does the same, so this allows comparison between
+    # thresholds in the two programs. Additionally, allows the same threshold to be used regardless of how many bits the
+    # audio data is
+    data_max = np.iinfo(data.dtype).max
+    data = data.astype(float)/data_max
+
+    # Check for stereo and discard if present (shouldn't happen if using preprocessSong.m)
+    if data.ndim is 2:
+        data = data[:, 0]
+
+    player_track = data
+    accompaniment_track = data
     update_queue = Queue.Queue()
 
     # Testing information for processing_thread
-    test_dict = {'song': player_track, 'Fs': rate}
+    test_dict = {'song': player_track, 'Fs': rate, 'plotting': True}
 
-    input_thread = FuncThread(input_audio_thread, input_audio)
+    input_thread = FuncThread(input_audio_thread, input_audio, test_dict)
     process_thread = FuncThread(processing_thread, input_audio, player_track, accompaniment_track, update_queue, test_dict)
     play_thread = FuncThread(playback_thread, accompaniment_track, update_queue)
 

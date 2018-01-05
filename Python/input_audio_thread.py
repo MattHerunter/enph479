@@ -5,11 +5,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def input_audio_thread(input_audio):
+def input_audio_thread(input_audio, test_dict):
     FORMAT = pyaudio.paInt16
     CHANNELS = 1
     RATE = 44100
-    CHUNK = 256*5
+    CHUNK = RATE/10
     TESTING = True
 
     audio = pyaudio.PyAudio()
@@ -18,25 +18,13 @@ def input_audio_thread(input_audio):
                         rate=RATE, input=True,
                         frames_per_buffer=CHUNK)
 
-    if TESTING:
-        rate, test_data = wavfile.read('../SongLibrary/majorScaleSingle.wav')
-        test_data = test_data[:, 0]
-        ii = 0
-        # Plot song
-        #plt.plot(np.arange(float(test_data.size))/RATE, test_data)
-        #plt.show()
+    ii = 0
     while True:
         if TESTING:
             # Get section of song
-            data = test_data[ii*CHUNK:(ii+1)*CHUNK]
-            # Show on plot
-            # plt.clf()
-            # plt.plot(np.arange(float(test_data.size)) / RATE, test_data)
-            # plt.plot((np.arange(float(CHUNK))+ii*CHUNK) / RATE, data)
-            # plt.show()
-
+            data = test_dict['song'][ii*CHUNK:(ii+1)*CHUNK]
             input_audio.put(data)
-            time.sleep(float(CHUNK)/RATE)
+            time.sleep(float(CHUNK)/test_dict['Fs'])
             ii += 1
         else:
             data = stream.read(CHUNK)

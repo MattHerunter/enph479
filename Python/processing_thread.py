@@ -7,9 +7,6 @@ from ringbuffer import RingBuffer
 
 def processing_thread(input_audio, player_track, accompaniment_track, update_queue, test_dict):
 
-    # Testing flag
-    TESTING = True
-
     # Algorithm initial conditions
     note_detected = False
     note_time = 0
@@ -64,13 +61,14 @@ def processing_thread(input_audio, player_track, accompaniment_track, update_que
                 rel_note = np.array([[note_time - note_time_prev, note_freq/note_freq_prev]])
                 detected_notes.extend(rel_note)
                 print(detected_notes.get())
+
                 # Find chunk location
-                chunk_location = find_location(detected_notes, rel_chunks)
+                #chunk_location = find_location(detected_notes, rel_chunks)
 
                 # Set position/tempo of the update
-                position = chunk_location
-                update = OutputUpdate(position, 1.0)
-                update_queue.put(update)
+                #position = chunk_location
+                #update = OutputUpdate(position, 1.0)
+                #update_queue.put(update)
 
 
 class OutputUpdate:

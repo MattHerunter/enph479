@@ -7,7 +7,8 @@ function [beats, mag] = identifySongBeats(Fs,time,song,plotting)
     % Algorithm Settings
     MIN_NOTE_LEN = 0.12;
     CUTOFF_FREQ = 30;
-    DIFF_TOL = 5e-5;
+    %DIFF_TOL = 5e-5;
+    DIFF_TOL = 4.8;
     
     % Get minNoteIdx
     S2IDX = numel(time)/time(end);
@@ -17,7 +18,7 @@ function [beats, mag] = identifySongBeats(Fs,time,song,plotting)
     songFftFilt = fftFilt(abs(song),Fs,CUTOFF_FREQ);
     
     % Get rising edges of signal
-    [idx, mag] = risingEdges(songFftFilt,DIFF_TOL,minNoteIdx);
+    [idx, mag] = risingEdges(songFftFilt,Fs,DIFF_TOL,minNoteIdx);
     
     % Plot of rising edge locations
     if plotting
@@ -33,9 +34,9 @@ function [beats, mag] = identifySongBeats(Fs,time,song,plotting)
     beats = time(idx);
 end
 
-function [idx, mag] = risingEdges(x,tol,spacing)
+function [idx, mag] = risingEdges(x,Fs,tol,spacing)
     % Diff and diff shifted forward one
-    dx = diff(x);
+    dx = diff(x)*Fs;
     dxp = [0;dx(1:end-1)];
     
     % Idx of rising edges
