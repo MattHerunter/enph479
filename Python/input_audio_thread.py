@@ -10,8 +10,7 @@ def input_audio_thread(input_audio, audio, test_dict):
     TESTING = True
 
     # start Recording
-    #audio = pyaudio.PyAudio()
-    #stream = audio.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
+    stream = audio.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
 
     ii = 0
     while True:

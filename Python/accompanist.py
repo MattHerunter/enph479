@@ -18,14 +18,19 @@ def accompanist():
     # thresholds in the two programs. Additionally, allows the same threshold to be used regardless of how many bits the
     # audio data is
     data_max = np.iinfo(data.dtype).max
-    data = data.astype(float)/data_max
+    data_normalized = data.astype(float)/data_max
 
     # Check for stereo and discard if present (shouldn't happen if using preprocessSong.m)
     if data.ndim is 2:
         data = data[:, 0]
+        data_normalized = data_normalized[:, 0]
 
-    player_track = data
+    # Player track must be normalized to deal with edge detection
+    player_track = data_normalized
+
+    # Accompaniment track must not be normalized (distorts playback)
     accompaniment_track = data
+
     update_queue = Queue.Queue()
 
     # Testing information for processing_thread. Note that plotting should only be set to True if debugging, and a break
