@@ -1,22 +1,17 @@
-from scipy.io import wavfile
 import pyaudio
 import time
-import numpy as np
-import matplotlib.pyplot as plt
 
 
-def input_audio_thread(input_audio, test_dict):
+def input_audio_thread(input_audio, audio, test_dict):
     FORMAT = pyaudio.paInt16
     CHANNELS = 1
     RATE = 44100
     CHUNK = RATE/10
     TESTING = True
 
-    audio = pyaudio.PyAudio()
     # start Recording
-    stream = audio.open(format=FORMAT, channels=CHANNELS,
-                        rate=RATE, input=True,
-                        frames_per_buffer=CHUNK)
+    #audio = pyaudio.PyAudio()
+    #stream = audio.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
 
     ii = 0
     while True:

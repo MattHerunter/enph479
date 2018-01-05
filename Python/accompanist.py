@@ -1,8 +1,8 @@
 import threading
 import Queue
 import numpy as np
+import pyaudio
 from scipy.io import wavfile
-
 from input_audio_thread import input_audio_thread
 from processing_thread import processing_thread
 from playback_thread import playback_thread
@@ -28,16 +28,19 @@ def accompanist():
     accompaniment_track = data
     update_queue = Queue.Queue()
 
-    # Testing information for processing_thread
-    test_dict = {'song': player_track, 'Fs': rate, 'plotting': True}
+    # Testing information for processing_thread. Note that plotting should only be set to True if debugging, and a break
+    # point needs to be set before the first plt.show() call, as it is a blocking call
+    test_dict = {'song': player_track, 'Fs': rate, 'plotting': False}
 
-    input_thread = FuncThread(input_audio_thread, input_audio, test_dict)
+    audio = pyaudio.PyAudio()
+
+    input_thread = FuncThread(input_audio_thread, input_audio, audio, test_dict)
     process_thread = FuncThread(processing_thread, input_audio, player_track, accompaniment_track, update_queue, test_dict)
-    play_thread = FuncThread(playback_thread, accompaniment_track, update_queue)
+    play_thread = FuncThread(playback_thread, accompaniment_track, update_queue, audio)
 
     input_thread.start()
     process_thread.start()
-    #play_thread.start()
+    play_thread.start()
 
 
 # Implements threads that can take parameters

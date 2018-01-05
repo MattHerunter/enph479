@@ -36,11 +36,11 @@ def find_location(chunk, chunks):
     #
     # return location
 
-    print("FINDLOCATION INFO:")
-    print("Chunk:")
-    print(chunk.get())
-    print("Chunks:")
-    print(chunks)
+    # print("FINDLOCATION INFO:")
+    # print("Chunk:")
+    # print(chunk.get())
+    # print("Chunks:")
+    # print(chunks)
 
     # Set all notes relative to the last note (because we'll be trying to match the most recent note in the sample to one in the song).
     # Store this in chunk_reverse and chunks_reverse.

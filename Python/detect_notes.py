@@ -97,6 +97,7 @@ def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_tim
             if test_dict['plotting']:
                 plt.clf()
                 plt.plot(freq_song_chunk, mag_fft_song_chunk, '-b', freq_song_chunk[note_freq_idx], mag_fft_song_chunk[note_freq_idx], '*r')
+                plt.xlim([0, 5000])
                 plt.show()
             
     # Reset the flag after enough time has passed

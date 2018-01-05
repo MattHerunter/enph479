@@ -32,8 +32,8 @@ function [out1,out2] = synchronizeNew2(song1,Fs1,song2,Fs2,writeDir,plotting)
     % Write the synchronized tracks to file (Python prefers readin wav
     % files)
     %audiowrite('MatchTests/synchronize_out.wav',out1+out2,Fs1);
-    audiowrite([writeDir '/song1Synchronized.wav'],out1,Fs1);
-    audiowrite([writeDir '/song2Synchronized.wav'],out2,Fs2);
+    audiowrite([writeDir '/song1_Synchronized.wav'],out1,Fs1);
+    audiowrite([writeDir '/song2_Synchronized.wav'],out2,Fs2);
 end
 
 function [ap,bp] = pad(a,b)

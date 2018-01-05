@@ -1,21 +1,28 @@
-# Import for multithreading
-import threading
-
 import pv
 import pyaudio
-import numpy as np
 
-def playback_thread(accompaniment_track, update_queue):
+
+def playback_thread(accompaniment_track, update_queue, audio):
     FORMAT = pyaudio.paInt16
     CHANNELS = 1
     RATE = 44100
 
-    audio = pyaudio.PyAudio()
+    #audio = pyaudio.PyAudio()
+
+    # Detect speakers
+    device_count = audio.get_device_count()
+    for i in range(0, device_count):
+        print("Name: " + audio.get_device_info_by_index(i)["name"])
+        print("Index: " + str(audio.get_device_info_by_index(i)["index"]))
+        print("\n")
+
+
     # start Playing
     stream = audio.open(format=FORMAT, channels=CHANNELS,
                         rate=RATE, output=True)
 
     pvoc = pv.PhaseVocoder()
+
 
     while True:
         update = update_queue.get()
