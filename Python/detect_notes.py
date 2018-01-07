@@ -59,7 +59,7 @@ def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_tim
         note_idx = np.nonzero(rising_edges)[0]
 
         # If yes, and past the halfway point, extract the frequency
-        if note_idx.size >= 1 and note_idx[0] <= rising_edges.size:
+        if note_idx.size >= 1 and note_idx[0] <= rising_edges.size/2:
             note_detected = True
 
             # Get first note index
