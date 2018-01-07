@@ -47,8 +47,8 @@ function notes = identifySongNotes(song, Fs, plotting)
     %{
     for ii = 1:numel(idx)
         % Ensure no out of bounds errors
-        windowStart = max(idx(ii) - minNoteIdx,1);
-        windowEnd   = min(idx(ii) + minNoteIdx, numel(song));
+        windowStart = max(idx(ii) + 0.11*S2IDX,1);
+        windowEnd   = min(idx(ii) + 0.21*S2IDX, numel(song));
         [freq, mag] = fftMag(song(windowStart:windowEnd),Fs);
         noteIdx = 1:ceil(numel(freq)/2);
         freq = freq(noteIdx);
@@ -70,11 +70,11 @@ function notes = identifySongNotes(song, Fs, plotting)
     %%{
     for ii = 1:numel(idx)
         % Ensure no out of bounds errors
-        windowStart = max(idx(ii) + 0.1*S2IDX,1);
-        windowEnd   = min(idx(ii) + 0.8*S2IDX, numel(song));
+        windowStart = max(idx(ii) + 0.11*S2IDX,1);
+        windowEnd   = min(idx(ii) + 0.21*S2IDX, numel(song));
         xs = song(windowStart:windowEnd);
         
-        freqs = 54 * 2.^(0:1/12:5);
+        freqs = 53.9 * 2.^(0:1/12:5);
         pd = round(Fs./freqs);
         
         L = windowEnd - pd(1) - windowStart + 1;
@@ -91,7 +91,6 @@ function notes = identifySongNotes(song, Fs, plotting)
         minpd=pd(minvalue);
         
         freq = Fs/minpd;
-        %freq = freq * 2^ceil(log2(400/freq));
         notes(ii,2) = freq;
     end
     %}
