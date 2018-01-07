@@ -4,6 +4,8 @@ function playPlayerNotes()
     freqs = notes(:,2);
 
     times = times - times(1);
+    
+    [times freqs]
     Fs = 20000;
 
     tim = 1:1/Fs:(times(end)+0.5);

@@ -8,7 +8,7 @@ def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_tim
 
     # Algorithm Settings (these should be the same or similar to the values found in identifySongNotes.m)
     MIN_NOTE_LEN = 0.12
-    DIFF_TOL = 4.8
+    DIFF_TOL = 2.5
 
     # Absolute value of song
     abs_song_chunk = np.abs(song_chunk)
@@ -67,51 +67,69 @@ def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_tim
             note_time = time()
 
             # Get dominant frequency of note
-            song_chunk_trim = song_chunk[note_idx:]
-            fft_song_chunk = np.fft.fft(song_chunk_trim - np.mean(song_chunk_trim))
-            mag_fft_song_chunk = np.abs(fft_song_chunk)
+            xs = song_chunk[note_idx+int(0.05*Fs) : note_idx+int(0.10*Fs)]
 
-            # Frequency vector
-            freq_song_chunk = np.fft.fftfreq(fft_song_chunk.size, 1.0/Fs)
+            freqs = 53.9 * np.exp2(np.linspace(0,4,4*12+1))
+            pd = np.divide(Fs,freqs)
 
-            # Cut in half
-            freq_song_chunk = freq_song_chunk[0:freq_song_chunk.size/2]
-            mag_fft_song_chunk = mag_fft_song_chunk[0:mag_fft_song_chunk.size/2]
+            L = int(len(xs) - pd[0] + 1)
+            amdf = np.zeros(len(pd))
+            for k in range(len(pd)):
+                xs_base = xs[0:L]
+                xs_shift = xs[int(pd[k]) : int(L+pd[k])]
+                amdf[k] = np.sum(np.abs(np.subtract(xs_shift, xs_base)))
 
-            # Get maximum frequency in the FFT
-            note_freq_idx = np.argmax(mag_fft_song_chunk)
-            note_freq = freq_song_chunk[note_freq_idx]
+            minvalue = np.argmin(amdf)
+            minpd = pd[minvalue]
 
-            # Attempt to correct for harmonics (sometimes the first harmonic has a higher peak than the base harmonic)
-            base_harmonic = False
-            harmonic_window_width = int(np.ceil(50 / np.diff(freq_song_chunk)[0]))  # 5Hz
+            note_freq = Fs / minpd
 
-            original_peak_mag = mag_fft_song_chunk[note_freq_idx]
-            harmonic_ratio_threshold = 0.3
-
-            while not base_harmonic:
-                harmonic_window_start = int(max(note_freq_idx / 2 - harmonic_window_width / 2, 0))
-                harmonic_window_end = int(min(harmonic_window_start + harmonic_window_width, mag_fft_song_chunk.size))
-
-                mag_fft_harmonic = mag_fft_song_chunk[harmonic_window_start:harmonic_window_end]
-                freq_harmonic = freq_song_chunk[harmonic_window_start:harmonic_window_end]
-
-                harmonic_freq_idx = np.argmax(mag_fft_harmonic) + harmonic_window_start
-                harmonic_ratio = mag_fft_song_chunk[harmonic_freq_idx] / original_peak_mag
-
-                if test_dict['plotting']:
-                    plt.clf()
-                    plt.plot(freq_song_chunk, mag_fft_song_chunk, '-b', label='Entire FFT')
-                    plt.plot(freq_harmonic, mag_fft_harmonic, '-r', label='Harmonic Search Window')
-                    plt.ylabel('Signal Amplitude')
-                    plt.xlabel('Time (s)')
-                    plt.xlim([0, 5000])
-                    plt.legend()
-
-                if harmonic_ratio >= harmonic_ratio_threshold:
-                    note_freq_idx = harmonic_freq_idx
-                else:
-                    base_harmonic = True
+            # # Get dominant frequency of note
+            # song_chunk_trim = song_chunk[note_idx:]
+            # fft_song_chunk = np.fft.fft(song_chunk_trim - np.mean(song_chunk_trim))
+            # mag_fft_song_chunk = np.abs(fft_song_chunk)
+            #
+            # # Frequency vector
+            # freq_song_chunk = np.fft.fftfreq(fft_song_chunk.size, 1.0/Fs)
+            #
+            # # Cut in half
+            # freq_song_chunk = freq_song_chunk[0:freq_song_chunk.size/2]
+            # mag_fft_song_chunk = mag_fft_song_chunk[0:mag_fft_song_chunk.size/2]
+            #
+            # # Get maximum frequency in the FFT
+            # note_freq_idx = np.argmax(mag_fft_song_chunk)
+            # note_freq = freq_song_chunk[note_freq_idx]
+            #
+            # # Attempt to correct for harmonics (sometimes the first harmonic has a higher peak than the base harmonic)
+            # base_harmonic = False
+            # harmonic_window_width = int(np.ceil(50 / np.diff(freq_song_chunk)[0]))  # 5Hz
+            #
+            # original_peak_mag = mag_fft_song_chunk[note_freq_idx]
+            # harmonic_ratio_threshold = 0.3
+            #
+            # while not base_harmonic:
+            #     harmonic_window_start = int(max(note_freq_idx / 2 - harmonic_window_width / 2, 0))
+            #     harmonic_window_end = int(min(harmonic_window_start + harmonic_window_width, mag_fft_song_chunk.size))
+            #
+            #     mag_fft_harmonic = mag_fft_song_chunk[harmonic_window_start:harmonic_window_end]
+            #     freq_harmonic = freq_song_chunk[harmonic_window_start:harmonic_window_end]
+            #
+            #     harmonic_freq_idx = np.argmax(mag_fft_harmonic) + harmonic_window_start
+            #     harmonic_ratio = mag_fft_song_chunk[harmonic_freq_idx] / original_peak_mag
+            #
+            #     if test_dict['plotting']:
+            #         plt.clf()
+            #         plt.plot(freq_song_chunk, mag_fft_song_chunk, '-b', label='Entire FFT')
+            #         plt.plot(freq_harmonic, mag_fft_harmonic, '-r', label='Harmonic Search Window')
+            #         plt.ylabel('Signal Amplitude')
+            #         plt.xlabel('Time (s)')
+            #         plt.xlim([0, 5000])
+            #         plt.legend()
+            #
+            #     if harmonic_ratio >= harmonic_ratio_threshold:
+            #         note_freq_idx = harmonic_freq_idx
+            #     else:
+            #         base_harmonic = True
 
             # # Attempt to correct for harmonics (sometimes the first harmonic has a higher peak than the base harmonic)
             # base_harmonic = False

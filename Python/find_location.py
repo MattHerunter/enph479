@@ -37,7 +37,7 @@ def find_location(chunk, chunks):
     #
     # return location
 
-    print("FINDLOCATION INFO:")
+    # print("FINDLOCATION INFO:")
     # print("Chunk:")
     # print(chunk.get())
     # print("Chunks:")
@@ -65,10 +65,10 @@ def find_location(chunk, chunks):
         chunks_reverse[len(chunks) - ii - 1, 0] = chunks_reverse[len(chunks) - ii, 0] - chunks[len(chunks) - ii - 1, 0]
         chunks_reverse[len(chunks) - ii - 1, 1] = chunks_reverse[len(chunks) - ii, 1] / chunks[len(chunks) - ii - 1, 1]
 
-    print("Chunk rev:")
-    print(chunk_reverse)
-    print("Chunks rev:")
-    print(chunks_reverse)
+    # print("Chunk rev:")
+    # print(chunk_reverse)
+    # print("Chunks rev:")
+    # print(chunks_reverse)
 
     # Iterate over all notes in the song to decide which best matches the sample.
     best_cand = -1
@@ -106,13 +106,13 @@ def find_location(chunk, chunks):
 
         qual_array[ii] = cand_qual
 
-    # plt.plot(range(0,len(chunks)),qual_array)
-    # plt.show()
+    plt.plot(range(0,len(chunks)),qual_array)
+    plt.show()
 
     location = best_cand
 
-    print("Location:")
-    print(location)
+    # print("Location:")
+    # print(location)
 
     return location
 

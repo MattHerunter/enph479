@@ -70,8 +70,8 @@ function notes = identifySongNotes(song, Fs, plotting)
     %%{
     for ii = 1:numel(idx)
         % Ensure no out of bounds errors
-        windowStart = max(idx(ii) + 0.11*S2IDX,1);
-        windowEnd   = min(idx(ii) + 0.21*S2IDX, numel(song));
+        windowStart = max(idx(ii) + 0.05*S2IDX,1);
+        windowEnd   = min(idx(ii) + 0.10*S2IDX, numel(song));
         xs = song(windowStart:windowEnd);
         
         freqs = 53.9 * 2.^(0:1/12:5);
