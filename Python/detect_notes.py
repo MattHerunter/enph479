@@ -15,6 +15,8 @@ def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_tim
 
     # Filter out higher frequencies
     abs_song_chunk_filt, zi = signal.lfilter(filter_b, filter_a, abs_song_chunk, zi=zi)
+    # Halfway point used as zi for next chunk (since shifted by half)
+    zi = abs_song_chunk_filt[int(abs_song_chunk_filt.size/2)]
 
     # Plotting for debugging/development only
     if test_dict['plotting']:
@@ -46,6 +48,16 @@ def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_tim
         plt.legend()
 
         plt.tight_layout()
+        plt.show()
+
+        plt.clf()
+        plot_time = np.arange(float(song_chunk.size)) / Fs
+        plt.plot(plot_time, abs_song_chunk, '-b', linewidth=2.0, label='Raw Signal')
+        plt.plot(plot_time, abs_song_chunk_filt, '-r', linewidth=2.0, label='Filtered Signal')
+        plt.ylabel('Signal Amplitude')
+        plt.xlabel('Time (s)')
+        plt.title('Comparison of Filtered and Unfiltered Signals')
+        plt.legend()
         plt.show()
 
     # If no note has been detected,

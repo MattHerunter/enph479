@@ -26,7 +26,7 @@ def processing_thread(input_audio, player_track, accompaniment_track, update_que
     [filter_b, filter_a, ] = signal.bessel(filter_order, [filter_cutoff / (Fs / 2.0)], btype='low', analog=False)
 
     # Filter initial conditions
-    zi = signal.lfilter_zi(filter_b, filter_a)
+    zi_initial = signal.lfilter_zi(filter_b, filter_a)
 
     # Load the preprocessed notes written by preprocessSong.m
     chunks = np.loadtxt('WriteDir/playerNotes.txt', delimiter='\t', skiprows=1)
@@ -42,7 +42,7 @@ def processing_thread(input_audio, player_track, accompaniment_track, update_que
 
         # Initialize the filter value
         if init_zi:
-            zi = zi*song_chunk[0]
+            zi = zi_initial*song_chunk[0]
             init_zi = False
 
         # Detect song notes
@@ -55,6 +55,7 @@ def processing_thread(input_audio, player_track, accompaniment_track, update_que
         note_time_prev = note_time
         note_time = id_notes_dict['note_time']
         zi = id_notes_dict['zi']
+        zi = zi_initial*zi
 
         # If the note time has changed, a new note was detected, so updated the note_freq
         if note_time is not note_time_prev:
