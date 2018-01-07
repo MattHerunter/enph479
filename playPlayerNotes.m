@@ -16,4 +16,5 @@ function playPlayerNotes()
     end
 
     soundsc(y,Fs)
+    audiowrite('Python/WriteDir/playerNotes.wav',y,Fs)
 end

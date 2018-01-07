@@ -3,7 +3,7 @@ function notes = identifySongNotes(song, Fs, plotting)
     alw = 0.75;    % AxesLineWidthw
     fsz = 22;      % Fontsize
     lw = 1.5;      % LineWidth
-    msz = 12;       % MarkerSize
+    msz = 12;      % MarkerSize
     
     % Algorithm Settings
     MIN_NOTE_LEN = 0.12;
@@ -15,6 +15,7 @@ function notes = identifySongNotes(song, Fs, plotting)
     
     t = (1:numel(song))/Fs;
     S2IDX = numel(t)/t(end);
+    
     minNoteIdx = round(MIN_NOTE_LEN*S2IDX);
     
     % Filter out higher frequencies
@@ -43,6 +44,7 @@ function notes = identifySongNotes(song, Fs, plotting)
     notes(:,3) = noteMag;
     
     % Find the frequencies of each peak
+    %{
     for ii = 1:numel(idx)
         % Ensure no out of bounds errors
         windowStart = max(idx(ii) - minNoteIdx,1);
@@ -57,10 +59,42 @@ function notes = identifySongNotes(song, Fs, plotting)
         
         % Plot frequencies
         if plotting
-            %plot(freq(pkIdxs),mag(pkIdxs),'*r',freq,mag,'-k');
-            %pause
+            plot(freq(pkIdxs),mag(pkIdxs),'*r',freq,mag,'-k');
+            xlim([0 1500])
+            pause
         end
     end
+    %}
+    
+    % Alternative frequency calculation
+    %%{
+    for ii = 1:numel(idx)
+        % Ensure no out of bounds errors
+        windowStart = max(idx(ii) + 0.1*S2IDX,1);
+        windowEnd   = min(idx(ii) + 0.8*S2IDX, numel(song));
+        xs = song(windowStart:windowEnd);
+        
+        freqs = 54 * 2.^(0:1/12:5);
+        pd = round(Fs./freqs);
+        
+        L = windowEnd - pd(1) - windowStart + 1;
+        amdf = zeros(size(pd));
+        for k = 1:numel(pd)
+            amdf(k) = sum(abs(xs(pd(k):L+pd(k)-1)-xs(1:L)));
+        end
+        
+        %plot(pd,amdf);
+        %pause
+        
+        amdfmin=min(amdf);
+        minvalue=find(amdf == amdfmin);
+        minpd=pd(minvalue);
+        
+        freq = Fs/minpd;
+        %freq = freq * 2^ceil(log2(400/freq));
+        notes(ii,2) = freq;
+    end
+    %}
     
 end
 

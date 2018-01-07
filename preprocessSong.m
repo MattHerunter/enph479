@@ -3,7 +3,7 @@
 function preprocessSong(playerTrackPath, accompTrackPath, writeDir)
     % Flags to control plotting for debugging purposes
     plotIdentifySongNotes = false;
-    plotSynchronize = true;
+    plotSynchronize = false;
     
     % Load the player's and accompanist's tracks
     [playerSong,playerFs] = audioread(playerTrackPath);
