@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 def find_location(chunk, chunks):
     # TESTING
@@ -36,7 +37,7 @@ def find_location(chunk, chunks):
     #
     # return location
 
-    # print("FINDLOCATION INFO:")
+    print("FINDLOCATION INFO:")
     # print("Chunk:")
     # print(chunk.get())
     # print("Chunks:")
@@ -64,14 +65,15 @@ def find_location(chunk, chunks):
         chunks_reverse[len(chunks) - ii - 1, 0] = chunks_reverse[len(chunks) - ii, 0] - chunks[len(chunks) - ii - 1, 0]
         chunks_reverse[len(chunks) - ii - 1, 1] = chunks_reverse[len(chunks) - ii, 1] / chunks[len(chunks) - ii - 1, 1]
 
-    # print("Chunk rev:")
-    # print(chunk_reverse)
-    # print("Chunks rev:")
-    # print(chunks_reverse)
+    print("Chunk rev:")
+    print(chunk_reverse)
+    print("Chunks rev:")
+    print(chunks_reverse)
 
     # Iterate over all notes in the song to decide which best matches the sample.
     best_cand = -1
     best_cand_qual = -float('Inf')
+    qual_array = np.zeros(len(chunks))
     for ii in range(1, len(chunks)):
         # Create an array of song notes relative to the current candidate.
         chunks_rel = np.zeros([ii, 2])
@@ -101,6 +103,11 @@ def find_location(chunk, chunks):
         if cand_qual > best_cand_qual:
             best_cand_qual = cand_qual
             best_cand = ii
+
+        qual_array[ii] = cand_qual
+
+    # plt.plot(range(0,len(chunks)),qual_array)
+    # plt.show()
 
     location = best_cand
 

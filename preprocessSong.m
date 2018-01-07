@@ -2,8 +2,8 @@
 % audio/data to writeDir
 function preprocessSong(playerTrackPath, accompTrackPath, writeDir)
     % Flags to control plotting for debugging purposes
-    plotIdentifySongNotes = true;
-    plotSynchronize = false;
+    plotIdentifySongNotes = false;
+    plotSynchronize = true;
     
     % Load the player's and accompanist's tracks
     [playerSong,playerFs] = audioread(playerTrackPath);
@@ -26,6 +26,6 @@ function preprocessSong(playerTrackPath, accompTrackPath, writeDir)
     % Write the data to file
     fid = fopen([writeDir '/playerNotes.txt'],'w');
     fprintf(fid, 'Time (s)\tFrequency (Hz)\n');
-    fprintf(fid, '%.2f\t%.2f\n', playerNotes');
+    fprintf(fid, '%.2f\t%.2f\n', playerNotes(:,1:2)');
     fclose(fid);
 end

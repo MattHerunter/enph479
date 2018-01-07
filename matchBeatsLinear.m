@@ -112,7 +112,8 @@ function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2,plotting)
         % exceeds a quality threshold.
         
         for numpairs = minpairs:maxpairs % Numpairs is a garbage variable here, just used for the graphing...
-            threshold = -30*0.7^(2*numpairs); %How to define a reasonable quality threshold?
+            %threshold = -30*0.7^(2*numpairs); %How to define a reasonable quality threshold?
+            threshold = -30*0.7^(2*30);
             
             tempbeat1 = beat1;
             tempbeat2 = beat2;
@@ -222,12 +223,12 @@ function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2,plotting)
         %plotBeat(beat2.*(beat1(end)/beat2(end)),2.0)
         plotBeat(beat2_unscaled,2.2,EC2,FC2)
         plotBeat(beat1,1.9,EC1,FC1)
-        x = [beat1(pair1);beat2_unscaled(pair2)];
-        y = [1.9;2.2];
+        x = [beat1(pair1) beat2_unscaled(pair2)];
+        y = [1.9 2.2];
         plot(x,y,'--k')
         plotBeat(beat3,0.6,EC2,FC2)
-        x = [beat1(pair1);beat3(pair2)];
-        y = [0.3;0.6];
+        x = [beat1(pair1) beat3(pair2)];
+        y = [0.3 0.6];
         plot(x,y,'k')
         ylim([0 3])
         %xlim([-0.2 3.1])

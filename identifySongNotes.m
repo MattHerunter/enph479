@@ -8,7 +8,8 @@ function notes = identifySongNotes(song, Fs, plotting)
     % Algorithm Settings
     MIN_NOTE_LEN = 0.12;
     CUTOFF_FREQ = 30;
-    DIFF_TOL = 4.8;
+    %DIFF_TOL = 4.8;
+    DIFF_TOL = 2.5;
     MAG_TOL = 592;
     MIN_FREQ_SPACING = 50;
     
@@ -20,7 +21,7 @@ function notes = identifySongNotes(song, Fs, plotting)
     songFftFilt = fftFilt(abs(song),Fs,CUTOFF_FREQ);
     
     % Get rising edges of signal
-    idx = risingEdges(songFftFilt,Fs,DIFF_TOL,minNoteIdx);
+    [idx,noteMag] = risingEdges(songFftFilt,Fs,DIFF_TOL,minNoteIdx);
     
     % Plot of rising edge locations
     if plotting
@@ -39,6 +40,7 @@ function notes = identifySongNotes(song, Fs, plotting)
     end
     
     notes(:,1) = t(idx);
+    notes(:,3) = noteMag;
     
     % Find the frequencies of each peak
     for ii = 1:numel(idx)
@@ -55,8 +57,8 @@ function notes = identifySongNotes(song, Fs, plotting)
         
         % Plot frequencies
         if plotting
-            plot(freq(pkIdxs),mag(pkIdxs),'*r',freq,mag,'-k');
-            pause
+            %plot(freq(pkIdxs),mag(pkIdxs),'*r',freq,mag,'-k');
+            %pause
         end
     end
     
@@ -98,6 +100,12 @@ function [idx, mag] = risingEdges(x,Fs,tol,spacing)
     
     % Idx of rising edges
     idx = find(dx >= tol & dxp < tol);
+    
+    % Removes duplicates
+    dupIdx = find(diff(idx) < spacing)+1;
+    idx(dupIdx) = [];
+    
+    % Note magnitudes
     mag = zeros(size(idx));
     for ii = 1:numel(idx)
         id = idx(ii);
@@ -106,8 +114,4 @@ function [idx, mag] = risingEdges(x,Fs,tol,spacing)
         end
         mag(ii) = x(id);
     end
-    
-    % Removes duplicates
-    dupIdx = find(diff(idx) < spacing)+1;
-    idx(dupIdx) = [];
 end

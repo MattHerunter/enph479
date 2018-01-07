@@ -4,8 +4,12 @@ function [out1,out2] = synchronizeNew2(song1,Fs1,song2,Fs2,writeDir,plotting)
     time2 = (1:numel(song2))/Fs2;
     
     % Identify song beats based on volume
-    [beat1, mag1] = identifySongBeats(Fs1,time1,song1,plotting);
-    [beat2, mag2] = identifySongBeats(Fs2,time2,song2,plotting);
+    notes1 = identifySongNotes(song1,Fs1,plotting);
+    beat1 = notes1(:,1);
+    mag1 = notes1(:,3);
+    notes2 = identifySongNotes(song2,Fs2,plotting);
+    beat2 = notes2(:,1);
+    mag2 = notes2(:,3);
     
     % Match beats in one song to the other
     [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2,plotting);

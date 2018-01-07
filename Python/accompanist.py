@@ -11,8 +11,8 @@ from playback_thread import playback_thread
 # Main accompanist driving code
 def accompanist():
     input_audio = Queue.Queue()
-    rate, data = wavfile.read('../SongLibrary/majorScaleSingle.wav')
-    # rate, data = wavfile.read('WriteDir/song1Synchronized.wav')
+    # rate, data = wavfile.read('../SongLibrary/majorScaleSingle.wav')
+    rate, data = wavfile.read('WriteDir/song1_Synchronized.wav')
 
     # Normalize magnitude of the audio file to 1. MATLAB's audioread does the same, so this allows comparison between
     # thresholds in the two programs. Additionally, allows the same threshold to be used regardless of how many bits the
@@ -29,7 +29,8 @@ def accompanist():
     player_track = data_normalized
 
     # Accompaniment track must not be normalized (distorts playback)
-    accompaniment_track = data
+    rate2, data2 = wavfile.read('WriteDir/song2_Synchronized.wav')
+    accompaniment_track = data2
 
     update_queue = Queue.Queue()
 
