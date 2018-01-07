@@ -53,11 +53,13 @@ def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_tim
     note_freq = -1
     if not note_detected:
 
-        # See if any values in the difference are above the specified tolerance
-        note_idx = np.nonzero(np.diff(abs_song_chunk_filt)*Fs >= DIFF_TOL)[0]
+        rising_edges = np.diff(abs_song_chunk_filt)*Fs >= DIFF_TOL
 
-        # If yes, extract the frequency
-        if note_idx.size >= 1:
+        # See if any values in the difference are above the specified tolerance
+        note_idx = np.nonzero(rising_edges)[0]
+
+        # If yes, and past the halfway point, extract the frequency
+        if note_idx.size >= 1 and note_idx[0] <= rising_edges.size:
             note_detected = True
 
             # Get first note index
@@ -82,16 +84,47 @@ def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_tim
 
             # Attempt to correct for harmonics (sometimes the first harmonic has a higher peak than the base harmonic)
             base_harmonic = False
-            harmonic_window_width = int(np.ceil(5/np.diff(freq_song_chunk)[0]))  # 5Hz
-            while not base_harmonic:
-                harmonic_window_start = int(max(note_freq_idx/2 - harmonic_window_width, 0))
-                harmonic_window_end = int(min(harmonic_window_start + harmonic_window_width, mag_fft_song_chunk.size))
-                harmonic_freq_idx = np.argmax(mag_fft_song_chunk[harmonic_window_start:harmonic_window_end]) + harmonic_window_start
+            harmonic_window_width = int(np.ceil(50 / np.diff(freq_song_chunk)[0]))  # 5Hz
 
-                if mag_fft_song_chunk[harmonic_freq_idx] >= 0.85*mag_fft_song_chunk[note_freq_idx]:
+            original_peak_mag = mag_fft_song_chunk[note_freq_idx]
+            harmonic_ratio_threshold = 0.3
+
+            while not base_harmonic:
+                harmonic_window_start = int(max(note_freq_idx / 2 - harmonic_window_width / 2, 0))
+                harmonic_window_end = int(min(harmonic_window_start + harmonic_window_width, mag_fft_song_chunk.size))
+
+                mag_fft_harmonic = mag_fft_song_chunk[harmonic_window_start:harmonic_window_end]
+                freq_harmonic = freq_song_chunk[harmonic_window_start:harmonic_window_end]
+
+                harmonic_freq_idx = np.argmax(mag_fft_harmonic) + harmonic_window_start
+                harmonic_ratio = mag_fft_song_chunk[harmonic_freq_idx] / original_peak_mag
+
+                if test_dict['plotting']:
+                    plt.clf()
+                    plt.plot(freq_song_chunk, mag_fft_song_chunk, '-b', label='Entire FFT')
+                    plt.plot(freq_harmonic, mag_fft_harmonic, '-r', label='Harmonic Search Window')
+                    plt.ylabel('Signal Amplitude')
+                    plt.xlabel('Time (s)')
+                    plt.xlim([0, 5000])
+                    plt.legend()
+
+                if harmonic_ratio >= harmonic_ratio_threshold:
                     note_freq_idx = harmonic_freq_idx
                 else:
                     base_harmonic = True
+
+            # # Attempt to correct for harmonics (sometimes the first harmonic has a higher peak than the base harmonic)
+            # base_harmonic = False
+            # harmonic_window_width = int(np.ceil(5/np.diff(freq_song_chunk)[0]))  # 5Hz
+            # while not base_harmonic:
+            #     harmonic_window_start = int(max(note_freq_idx/2 - harmonic_window_width, 0))
+            #     harmonic_window_end = int(min(harmonic_window_start + harmonic_window_width, mag_fft_song_chunk.size))
+            #     harmonic_freq_idx = np.argmax(mag_fft_song_chunk[harmonic_window_start:harmonic_window_end]) + harmonic_window_start
+            #
+            #     if mag_fft_song_chunk[harmonic_freq_idx] >= 0.85*mag_fft_song_chunk[note_freq_idx]:
+            #         note_freq_idx = harmonic_freq_idx
+            #     else:
+            #         base_harmonic = True
 
             print('time: ' + str(test_dict['time']) + ', freq: ' + str(note_freq))
             if test_dict['plotting']:

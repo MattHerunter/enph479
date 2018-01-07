@@ -6,7 +6,7 @@ def input_audio_thread(input_audio, audio, test_dict):
     FORMAT = pyaudio.paInt16
     CHANNELS = 1
     RATE = 44100
-    CHUNK = RATE/10
+    CHUNK = RATE/5
     TESTING = True
 
     # start Recording
@@ -16,7 +16,9 @@ def input_audio_thread(input_audio, audio, test_dict):
     while True:
         if TESTING:
             # Get section of song
-            data = test_dict['song'][ii*CHUNK:(ii+1)*CHUNK]
+            chunk_start = int(ii/2.*CHUNK)
+            chunk_end = chunk_start + CHUNK
+            data = test_dict['song'][chunk_start:chunk_end]
             input_audio.put(data)
             time.sleep(float(CHUNK)/test_dict['Fs'])
             ii += 1
