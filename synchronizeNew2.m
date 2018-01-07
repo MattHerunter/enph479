@@ -29,6 +29,11 @@ function [out1,out2] = synchronizeNew2(song1,Fs1,song2,Fs2,writeDir,plotting)
     out1 = song1(time1 > beat1(1));
     [out1,out2]=pad(out1,out2);
     
+    % Normalize output data to fit in [-1,1)
+    out1 = normalizeAudio(out1);
+    out2 = normalizeAudio(out2);
+    
+    soundsc(out1+out2,Fs1)
     % Write the synchronized tracks to file (Python prefers readin wav
     % files)
     %audiowrite('MatchTests/synchronize_out.wav',out1+out2,Fs1);
@@ -46,4 +51,10 @@ function [ap,bp] = pad(a,b)
         bp = zeros(size(a));
         bp(1:numel(b)) = b;
     end
+end
+
+function out = normalizeAudio(a)
+    out = a - min(a);
+    out = out./max(out) * 1.999;
+    out = out - 1;
 end

@@ -2,7 +2,7 @@
 % audio/data to writeDir
 function preprocessSong(playerTrackPath, accompTrackPath, writeDir)
     % Flags to control plotting for debugging purposes
-    plotIdentifySongNotes = false;
+    plotIdentifySongNotes = true;
     plotSynchronize = false;
     
     % Load the player's and accompanist's tracks

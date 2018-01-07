@@ -33,8 +33,8 @@ function notes = identifySongNotes(song, Fs, plotting)
         title('Note Detection on Major Scale');
         set(gca, 'FontSize', fsz, 'LineWidth', alw); %<- Set properties
         A = axis;
-        axis([0 5 A(3) A(4)])
-        pbaspect([1 1 1]);
+        %axis([0 5 A(3) A(4)])
+        %pbaspect([1 1 1]);
         pause;
     end
     
@@ -71,6 +71,9 @@ function idx = peakIdxs(x,tol,spacing)
     
     % Peaks above tol
     idx = find(x >= xp & x >= xn & x >= tol);
+    if isempty(idx)
+        idx = find(x == max(x));
+    end
     
     % Not far enough apart, likely duplicate peaks
     dups = find(diff(idx) < spacing);
@@ -88,13 +91,21 @@ function idx = peakIdxs(x,tol,spacing)
     idx(dupIdx)=[];
 end
 
-function idx = risingEdges(x,Fs,tol,spacing)
+function [idx, mag] = risingEdges(x,Fs,tol,spacing)
     % Diff and diff shifted forward one
     dx = diff(x)*Fs;
     dxp = [0;dx(1:end-1)];
     
     % Idx of rising edges
     idx = find(dx >= tol & dxp < tol);
+    mag = zeros(size(idx));
+    for ii = 1:numel(idx)
+        id = idx(ii);
+        while x(id+1) > x(id)
+            id = id+1;
+        end
+        mag(ii) = x(id);
+    end
     
     % Removes duplicates
     dupIdx = find(diff(idx) < spacing)+1;
