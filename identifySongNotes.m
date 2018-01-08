@@ -66,7 +66,8 @@ function notes = identifySongNotes(song, Fs, plotting)
     end
     %}
     
-    % Alternative frequency calculation
+    % Alternative frequency calculation using AMDF (Average Magnitude
+    % Difference Function).
     %%{
     for ii = 1:numel(idx)
         % Ensure no out of bounds errors

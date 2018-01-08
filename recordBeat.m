@@ -12,6 +12,8 @@ function b = recordBeat()
     
     waitfor(f)
     b = a - a(1);
+    
+    b = b';
 
     function button(f, eventDat)
         if strcmp(eventDat.Key,'q')

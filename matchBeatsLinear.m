@@ -12,6 +12,7 @@ function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2,plotting)
     minpairs = 3;
     bestqn = -inf*(1:maxpairs);
     
+    % Algorithm 2 is the usable one, described in final report.
     algorithm = 2;
     
     if algorithm == 0
@@ -112,8 +113,8 @@ function [pair1, pair2] = matchBeatsLinear(beat1,beat2,mag1,mag2,plotting)
         % exceeds a quality threshold.
         
         for numpairs = minpairs:maxpairs % Numpairs is a garbage variable here, just used for the graphing...
-            %threshold = -30*0.7^(2*numpairs); %How to define a reasonable quality threshold?
-            threshold = -30*0.7^(2*30);
+            threshold = -30*0.7^(2*numpairs); %How to define a reasonable quality threshold?
+            %threshold = -30*0.7^(2*30);
             
             tempbeat1 = beat1;
             tempbeat2 = beat2;
