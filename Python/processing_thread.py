@@ -32,9 +32,9 @@ def processing_thread(input_audio, player_track, accompaniment_track, update_que
     chunks = np.loadtxt('WriteDir/playerNotes.txt', delimiter='\t', skiprows=1)
 
     # Make relative chunks (difference in time, ratio in frequency)
-    rel_times = np.diff(chunks[:, 0])
-    rel_freqs = chunks[1:, 1]/chunks[0:-1, 1]
-    rel_chunks = np.c_[rel_times, rel_freqs]
+    # rel_times = np.diff(chunks[:, 0])
+    # rel_freqs = chunks[1:, 1]/chunks[0:-1, 1]
+    # rel_chunks = np.c_[rel_times, rel_freqs]
 
     while True:
         # Get next chunk of data from the input_audio queue
@@ -62,14 +62,16 @@ def processing_thread(input_audio, player_track, accompaniment_track, update_que
             note_freq_prev = note_freq
             note_freq = id_notes_dict['note_freq']
 
+            note = np.array([[note_time, note_freq]])
+            detected_notes.extend(note)
+
             # Need at least two note detections since we are working with relative frequencies/timings
             if note_freq_prev is not -1:
-                rel_note = np.array([[note_time - note_time_prev, note_freq/note_freq_prev]])
-                detected_notes.extend(rel_note)
+                # rel_note = np.array([[note_time - note_time_prev, note_freq/note_freq_prev]])
                 # print(detected_notes.get())
-
                 # Find chunk location
-                chunk_location = find_location(detected_notes, rel_chunks)
+                # chunk_location = find_location(detected_notes, rel_chunks)
+                chunk_location = find_location(detected_notes, chunks)
 
                 # Set position/tempo of the update
                 position = chunk_location

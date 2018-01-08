@@ -23,7 +23,7 @@ def playback_thread(accompaniment_track, update_queue, audio):
 
     chunks = np.loadtxt('WriteDir/playerNotes.txt', delimiter='\t', skiprows=1)
 
-    update = OutputUpdate(0,1)
+    update = OutputUpdate(0, 1)
     updateTime = time.time()
     while True:
         if not update_queue.empty():

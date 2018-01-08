@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
-from time import time
 
 
 def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_time, test_dict):
@@ -76,13 +75,13 @@ def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_tim
 
             # Get first note index
             note_idx = note_idx[0]
-            note_time = time()
+            note_time = test_dict['time'] + float(note_idx) / Fs
 
             # Get dominant frequency of note
             xs = song_chunk[note_idx+int(0.05*Fs) : note_idx+int(0.10*Fs)]
 
-            freqs = 53.9 * np.exp2(np.linspace(0,4,4*12+1))
-            pd = np.divide(Fs,freqs)
+            freqs = 53.9 * np.exp2(np.linspace(0, 4, 4*12+1))
+            pd = np.divide(Fs, freqs)
 
             L = int(len(xs) - pd[0] + 1)
             amdf = np.zeros(len(pd))
@@ -164,7 +163,7 @@ def detect_notes(song_chunk, Fs, filter_b, filter_a, zi, note_detected, note_tim
                 plt.show()
             
     # Reset the flag after enough time has passed
-    elif time() - note_time >= MIN_NOTE_LEN:
+    elif test_dict['time'] - note_time >= MIN_NOTE_LEN:
         note_detected = False
 
     return {'note_detected': note_detected, 'note_time': note_time, 'note_freq': note_freq, 'zi': zi}
